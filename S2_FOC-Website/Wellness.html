@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Health & Wellness Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #DE7C7D;
+      }
+      h1, h2 {
+        font-family: 'Pacifico', cursive;
+      }
+      .active-button {
+        background-color: #740938 !important;
+        color: white !important;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen text-[#740938]">
+    <header class="bg-[#AF1740] text-white text-center py-6 shadow-md">
+      <h1 class="text-4xl">🌸 Health & Wellness Hub 🌸</h1>
+    </header>
+    <main class="p-6 max-w-4xl mx-auto">
+      <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+        <h2 class="text-2xl text-[#AF1740] mb-4">📝 Personal Info</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="font-semibold">Name:</label>
+            <input id="name" type="text" class="w-full p-2 border border-[#CC2B52] rounded-xl" />
+          </div>
+          <div>
+            <label class="font-semibold">Age:</label>
+            <input id="age" type="number" class="w-full p-2 border border-[#CC2B52] rounded-xl" />
+          </div>
+          <div>
+            <label class="font-semibold">Gender:</label>
+            <select id="gender" class="w-full p-2 border border-[#CC2B52] rounded-xl">
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+              <option value="other">Rather not say</option>
+            </select>
+          </div>
+          <div>
+            <label class="font-semibold">Height (cm):</label>
+            <input id="height" type="number" class="w-full p-2 border border-[#CC2B52] rounded-xl" />
+          </div>
+          <div>
+            <label class="font-semibold">Weight (kg):</label>
+            <input id="weight" type="number" class="w-full p-2 border border-[#CC2B52] rounded-xl" />
+          </div>
+          <div>
+            <label class="font-semibold">Target area:</label>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" onclick="selectBodyFocus(this, 'arms')" class="px-4 py-2 rounded-lg bg-[#AF1740] text-white">Arms</button>
+              <button type="button" onclick="selectBodyFocus(this, 'abs')" class="px-4 py-2 rounded-lg bg-[#AF1740] text-white">Abs</button>
+              <button type="button" onclick="selectBodyFocus(this, 'legs')" class="px-4 py-2 rounded-lg bg-[#AF1740] text-white">Legs</button>
+              <button type="button" onclick="selectBodyFocus(this, 'glutes')" class="px-4 py-2 rounded-lg bg-[#AF1740] text-white">Glutes</button>
+              <button type="button" onclick="selectBodyFocus(this, 'back')" class="px-4 py-2 rounded-lg bg-[#AF1740] text-white">Back</button>
+              <button type="button" onclick="selectBodyFocus(this, 'core')" class="px-4 py-2 rounded-lg bg-[#AF1740] text-white">Core</button>
+              <input type="hidden" id="bodyFocus" />
+            </div>
+          </div>
+          <div>
+            <label class="font-semibold">Skin Type:</label>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" onclick="selectType(this, 'skinType', 'oily')" class="px-4 py-2 rounded-lg bg-[#AF1740] text-white">Oily</button>
+              <button type="button" onclick="selectType(this, 'skinType', 'dry')" class="px-4 py-2 rounded-lg bg-[#AF1740] text-white">Dry</button>
+              <button type="button" onclick="selectType(this, 'skinType', 'combination')" class="px-4 py-2 rounded-lg bg-[#AF1740] text-white">Combination</button>
+              <button type="button" onclick="selectType(this, 'skinType', 'sensitive')" class="px-4 py-2 rounded-lg bg-[#AF1740] text-white">Sensitive</button>
+              <input type="hidden" id="skinType" />
+            </div>
+          </div>
+          <div>
+            <label class="font-semibold">Hair Type:</label>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" onclick="selectType(this, 'hairType', 'straight')" class="px-4 py-2 rounded-lg bg-[#AF1740] text-white">Straight</button>
+              <button type="button" onclick="selectType(this, 'hairType', 'wavy')" class="px-4 py-2 rounded-lg bg-[#AF1740] text-white">Wavy</button>
+              <button type="button" onclick="selectType(this, 'hairType', 'curly')" class="px-4 py-2 rounded-lg bg-[#AF1740] text-white">Curly</button>
+              <button type="button" onclick="selectType(this, 'hairType', 'coily')" class="px-4 py-2 rounded-lg bg-[#AF1740] text-white">Coily</button>
+              <input type="hidden" id="hairType" />
+            </div>
+          </div>
+        </div>
+        <button onclick="generatePlan()" class="bg-[#740938] text-white mt-6 px-6 py-3 rounded-xl hover:bg-[#AF1740] transition-all">✨ Get My Wellness Plan ✨</button>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl shadow-lg p-6">
+          <h2 class="text-xl text-[#AF1740] mb-4">💪 Health Plan</h2>
+          <pre id="healthOutput" class="whitespace-pre-wrap text-gray-800"></pre>
+        </div>
+        <div class="bg-white rounded-2xl shadow-lg p-6">
+          <h2 class="text-xl text-[#AF1740] mb-4">🧖 Self-Care Plan</h2>
+          <pre id="selfcareOutput" class="whitespace-pre-wrap text-gray-800"></pre>
+        </div>
+      </div>
+    </main>
+
+    <footer class="text-center text-white py-4 mt-10" style="background-color:#AF1740;">
+      Made with ❤️ by T&C • © 2025
+      Jacinta
+    </footer>
+
+    <script>
+      function selectType(button, fieldId, value) {
+        document.getElementById(fieldId).value = value;
+        const buttons = button.parentElement.querySelectorAll('button');
+        buttons.forEach(btn => btn.classList.remove('active-button'));
+        button.classList.add('active-button');
+      }
+
+      function selectBodyFocus(button, value) {
+        document.getElementById('bodyFocus').value = value;
+        const buttons = button.parentElement.querySelectorAll('button');
+        buttons.forEach(btn => btn.classList.remove('active-button'));
+        button.classList.add('active-button');
+      }
+
+      function generatePlan() {
+        const name = document.getElementById('name').value || "Friend";
+        const age = parseInt(document.getElementById('age').value);
+        const gender = document.getElementById('gender').value;
+        const height = parseInt(document.getElementById('height').value);
+        const weight = parseInt(document.getElementById('weight').value);
+        const bodyFocus = document.getElementById('bodyFocus').value.toLowerCase();
+        const skinType = document.getElementById('skinType').value;
+        const hairType = document.getElementById('hairType').value;
+
+        const bmi = (weight / ((height / 100) ** 2)).toFixed(2);
+
+        let healthPlan = `Hi ${name}! 💖\nYour BMI is ${bmi}.`;
+        if (bmi < 18.5) {
+          healthPlan += " You are underweight. Try a nutrient-rich diet with healthy fats and strength training.\n";
+        } else if (bmi >= 18.5 && bmi <= 24.9) {
+          healthPlan += " You’re within the healthy BMI range. Keep it up with balanced meals and consistent workouts!\n";
+        } else {
+          healthPlan += " You are above the healthy BMI range. Incorporate cardio, mindful eating, and hydration.\n";
+        }
+
+        if (age > 45) {
+          healthPlan += "\nSince you're over 45, focus on joint-friendly workouts like yoga, swimming, or brisk walking.\n";
+        } else {
+          healthPlan += "\nYour age is perfect to build strong habits! Mix strength and cardio for optimal results.\n";
+        }
+
+        if (bodyFocus.includes("abs")) {
+          healthPlan += "\nFor abs: Try planks, crunches, and mountain climbers.\n";
+        } else if (bodyFocus.includes("arms")) {
+          healthPlan += "\nFor arms: Do push-ups, tricep dips, and resistance training.\n";
+        } else if (bodyFocus.includes("legs")) {
+          healthPlan += "\nFor legs: Include squats, lunges, and step-ups.\n";
+        } else if (bodyFocus.includes("glutes") || bodyFocus.includes("butt")) {
+          healthPlan += "\nFor glutes: Hip thrusts, glute bridges, and donkey kicks are your friends.\n";
+        }
+
+        healthPlan += "\n🧃 Diet Tips: " + (bmi < 18.5 ? "Add calorie-dense healthy foods like nuts, avocados, and smoothies." : (bmi > 25 ? "Try portion control and eat more whole grains, veggies, and lean protein." : "Stay consistent with water, fruits, protein, and fiber!"));
+
+        let selfcarePlan = `✨ Self-care just for you, ${name}! ✨\nSkin Type: ${skinType}\nHair Type: ${hairType}\n`;
+
+        if (skinType === 'oily') {
+          selfcarePlan += "Skincare: Use a foaming cleanser, light moisturizer, and niacinamide serum.\n";
+        } else if (skinType === 'dry') {
+          selfcarePlan += "Skincare: Hydrate with hyaluronic acid, and lock in moisture with ceramide creams.\n";
+        } else if (skinType === 'combination') {
+          selfcarePlan += "Skincare: Balance with a gentle cleanser and gel moisturizer.\n";
+        } else {
+          selfcarePlan += "Skincare: Stick to fragrance-free, soothing products with aloe or chamomile.\n";
+        }
+
+        if (hairType === 'straight') {
+          selfcarePlan += "Haircare: Use light conditioners, avoid heavy oils, and wash regularly.\n";
+        } else if (hairType === 'wavy') {
+          selfcarePlan += "Haircare: Try co-washing, hydrate with curl creams, and air dry if possible.\n";
+        } else if (hairType === 'curly') {
+          selfcarePlan += "Haircare: Use sulfate-free shampoos, curl creams, and deep conditioners weekly.\n";
+        } else {
+          selfcarePlan += "Haircare: Focus on moisture-rich routines, protective styles, and oils like argan or castor.\n";
+        }
+
+        document.getElementById('healthOutput').textContent = healthPlan;
+        document.getElementById('selfcareOutput').textContent = selfcarePlan;
+      }
+    </script>
+  </body>
+</html>
