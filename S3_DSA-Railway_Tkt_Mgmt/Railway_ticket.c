@@ -19,7 +19,7 @@ struct Passenger *head = NULL;
 struct Passenger *waiting_head = NULL;     
 
 int seats[ROWS][COLS] = {0};                                         // 0 = available, 1 = booked                                   ----------------------
-int ticket_counter = 1;                    
+int ticket_counter = 1;                                              // Unique ticket ID generator
 
 struct Passenger * createPassenger(char name[], int age, const char seat_choice[]) {
     struct Passenger * newNode = malloc(sizeof(struct Passenger));
