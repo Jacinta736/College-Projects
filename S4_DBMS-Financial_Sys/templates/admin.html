@@ -293,7 +293,7 @@
         return (await fetch(url, { method:'POST', body: new URLSearchParams(data) })).json();
     }
 
-    // ── Customers list ──
+    // ── Customers list ──//
     async function loadCustomers() {
         allCustomers = await get('/all_customers');
         renderCustomers(allCustomers);
