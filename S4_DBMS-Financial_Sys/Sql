@@ -1,0 +1,252 @@
+mysql> use financial_systems;
+Database changed
+
+mysql> create table users (userid int primary key auto_increment, username varchar(50) unique not null, 
+       password varchar(255) not null, role enum('Customer','Admin') not null);
+Query OK, 0 rows affected (0.10 sec)
+
+mysql> desc users;
++----------+--------------------------+------+-----+---------+----------------+
+| Field    | Type                     | Null | Key | Default | Extra          |
++----------+--------------------------+------+-----+---------+----------------+
+| userid   | int                      | NO   | PRI | NULL    | auto_increment |
+| username | varchar(50)              | NO   | UNI | NULL    |                |
+| password | varchar(255)             | NO   |     | NULL    |                |
+| role     | enum('Customer','Admin') | NO   |     | NULL    |                |
++----------+--------------------------+------+-----+---------+----------------+
+4 rows in set (0.03 sec)
+
+mysql> create table customers(customerid int primary key auto_increment,userid int unique, firstname varchar(50) 
+       not null, lastname varchar(50), dob date, email varchar(100), phone varchar(10), Address text, DOCreation date, foreign key(userid) references users(userid) on delete cascade);
+Query OK, 0 rows affected (0.07 sec)
+
+mysql> desc customers;
++------------+--------------+------+-----+---------+----------------+
+| Field      | Type         | Null | Key | Default | Extra          |
++------------+--------------+------+-----+---------+----------------+
+| customerid | int          | NO   | PRI | NULL    | auto_increment |
+| userid     | int          | YES  | UNI | NULL    |                |
+| firstname  | varchar(50)  | NO   |     | NULL    |                |
+| lastname   | varchar(50)  | YES  |     | NULL    |                |
+| dob        | date         | YES  |     | NULL    |                |
+| email      | varchar(100) | YES  |     | NULL    |                |
+| phone      | varchar(10)  | YES  |     | NULL    |                |
+| Address    | text         | YES  |     | NULL    |                |
+| DOCreation | date         | YES  |     | NULL    |                |
++------------+--------------+------+-----+---------+----------------+
+9 rows in set (0.01 sec)
+
+mysql> create table accounts(accountid int primary key auto_increment, customerid int, accounttype 
+       enum('Savings','Current') not null, balance decimal(15,2) default 0, currency varchar(20) default 'INR', 
+       createdate timestamp default current_timestamp, foreign key (customerid) references customers(customerid));
+Query OK, 0 rows affected (0.18 sec)
+
+mysql> desc accounts;
++-------------+---------------------------+------+-----+-------------------+-------------------+
+| Field       | Type                      | Null | Key | Default           | Extra             |
++-------------+---------------------------+------+-----+-------------------+-------------------+
+| accountid   | int                       | NO   | PRI | NULL              | auto_increment    |
+| customerid  | int                       | YES  | MUL | NULL              |                   |
+| accounttype | enum('Savings','Current') | NO   |     | NULL              |                   |
+| balance     | decimal(15,2)             | YES  |     | 0.00              |                   |
+| currency    | varchar(20)               | YES  |     | INR               |                   |
+| createdate  | timestamp                 | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
++-------------+---------------------------+------+-----+-------------------+-------------------+
+6 rows in set (0.06 sec)
+
+mysql> create table transactions (transactionid int primary key auto_increment, fromaccount int, toaccount int, 
+       transactiontype enum('Transfer','Deposit','Withdraw') not null, amount decimal (15,2) not null, 
+       transactiondate timestamp default current_timestamp, foreign key (fromaccount) references accounts(accountid), 
+       foreign key (toaccount) references accounts(accountid));
+Query OK, 0 rows affected (0.13 sec)
+
+mysql> desc transactions;
++-----------------+---------------------------------------+------+-----+-------------------+-------------------+
+| Field           | Type                                  | Null | Key | Default           | Extra             |
++-----------------+---------------------------------------+------+-----+-------------------+-------------------+
+| transactionid   | int                                   | NO   | PRI | NULL              | auto_increment    |
+| fromaccount     | int                                   | YES  | MUL | NULL              |                   |
+| toaccount       | int                                   | YES  | MUL | NULL              |                   |
+| transactiontype | enum('Transfer','Deposit','Withdraw') | NO   |     | NULL              |                   |
+| amount          | decimal(15,2)                         | NO   |     | NULL              |                   |
+| transactiondate | timestamp                             | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
++-----------------+---------------------------------------+------+-----+-------------------+-------------------+
+6 rows in set (0.05 sec)
+
+mysql> create table cards (cardid int primary key auto_increment, accountno int, cardtype enum('Credit','Debit'), 
+       cardnumber varchar(10) unique not null, Expiry date, cvv int, foreign key (accountno) REFERENCES Accounts(AccountID) ON DELETE CASCADE);
+Query OK, 0 rows affected (0.11 sec)
+
+mysql> desc cards;
++------------+------------------------+------+-----+---------+----------------+
+| Field      | Type                   | Null | Key | Default | Extra          |
++------------+------------------------+------+-----+---------+----------------+
+| cardid     | int                    | NO   | PRI | NULL    | auto_increment |
+| accountno  | int                    | YES  | MUL | NULL    |                |
+| cardtype   | enum('Credit','Debit') | YES  |     | NULL    |                |
+| cardnumber | varchar(10)            | NO   | UNI | NULL    |                |
+| Expiry     | date                   | YES  |     | NULL    |                |
+| cvv        | int                    | YES  |     | NULL    |                |
++------------+------------------------+------+-----+---------+----------------+
+6 rows in set (0.01 sec)
+
+mysql> create table audit (LogID INT PRIMARY KEY AUTO_INCREMENT,UserID INT,ActionType VARCHAR(100),
+       TableAffected VARCHAR(50),ActionTimestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY (UserID) REFERENCES Users(UserID));
+Query OK, 0 rows affected (0.07 sec)
+
+mysql> desc audit;
++-----------------+--------------+------+-----+-------------------+-------------------+
+| Field           | Type         | Null | Key | Default           | Extra             |
++-----------------+--------------+------+-----+-------------------+-------------------+
+| LogID           | int          | NO   | PRI | NULL              | auto_increment    |
+| UserID          | int          | YES  | MUL | NULL              |                   |
+| ActionType      | varchar(100) | YES  |     | NULL              |                   |
+| TableAffected   | varchar(50)  | YES  |     | NULL              |                   |
+| ActionTimestamp | timestamp    | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
++-----------------+--------------+------+-----+-------------------+-------------------+
+5 rows in set (0.01 sec)
+
+mysql> CREATE TRIGGER update_balance_after_transaction
+    -> AFTER INSERT ON transactions
+    -> FOR EACH ROW
+    -> BEGIN
+    -> 
+    ->     IF NEW.transactiontype = 'Deposit' THEN
+    ->         UPDATE accounts
+    ->         SET balance = balance + NEW.amount
+    ->         WHERE accountid = NEW.toaccount;
+    -> 
+    ->     ELSEIF NEW.transactiontype = 'Withdraw' THEN
+    ->         UPDATE accounts
+    ->         SET balance = balance - NEW.amount
+    ->         WHERE accountid = NEW.fromaccount;
+    -> 
+    ->     ELSEIF NEW.transactiontype = 'Transfer' THEN
+    ->         UPDATE accounts
+    ->         SET balance = balance - NEW.amount
+    ->         WHERE accountid = NEW.fromaccount;
+    -> 
+    ->         UPDATE accounts
+    ->         SET balance = balance + NEW.amount
+    ->         WHERE accountid = NEW.toaccount;
+    ->     END IF;
+    -> 
+    -> END //
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> create trigger log_transaction
+    -> after insert on transactions
+    -> for each row
+    -> begin
+    -> 
+    -> insert into audit (userid, actiontype, tableaffected)
+    -> values (null, 'transaction performed', 'transactions');
+    -> 
+    -> end //
+Query OK, 0 rows affected (0.08 sec)
+
+mysql> CREATE TRIGGER check_balance_before_withdraw
+    -> BEFORE INSERT ON transactions
+    -> FOR EACH ROW
+    -> BEGIN
+    -> 
+    -> DECLARE current_balance DECIMAL(15,2);
+    -> 
+    -> IF NEW.transactiontype = 'Withdraw' OR NEW.transactiontype = 'Transfer' THEN
+    -> 
+    ->     SELECT balance INTO current_balance
+    ->     FROM accounts
+    ->     WHERE accountid = NEW.fromaccount;
+    -> 
+    ->     IF current_balance < NEW.amount THEN
+    ->         SIGNAL SQLSTATE '45000'
+    ->         SET MESSAGE_TEXT = 'Insufficient balance';
+    ->     END IF;
+    -> 
+    -> END IF;
+    -> 
+    -> END //
+Query OK, 0 rows affected (0.06 sec)
+
+mysql> CREATE VIEW personal_details AS
+    -> SELECT u.userid, u.username, c.firstname, c.lastname, c.dob, c.email, c.phone, c.address
+    -> FROM users u
+    -> JOIN customers c ON u.userid = c.userid;
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> CREATE VIEW account_details AS
+    -> SELECT a.accountid as accountno, a.accounttype, a.balance
+    -> from accounts a;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> CREATE VIEW card_details AS
+    -> SELECT
+    ->     cd.cardid,
+    ->     cd.accountno,
+    ->     cd.cardtype,
+    ->     cd.cardnumber,
+    ->     cd.Expiry,
+    ->     c.userid
+    -> FROM cards cd
+    -> JOIN accounts a  ON cd.accountno   = a.accountid
+    -> JOIN customers c ON a.customerid   = c.customerid;
+Query OK, 0 rows affected (0.08 sec)
+
+mysql> CREATE OR REPLACE VIEW transaction_details AS
+    -> SELECT
+    ->     t.transactionid,
+    ->     t.fromaccount,
+    ->     t.toaccount,
+    ->     t.transactiontype,
+    ->     t.amount,
+    ->     t.transactiondate,
+    ->     fa_c.userid  AS from_userid,
+    ->     ta_c.userid  AS to_userid
+    -> FROM transactions t
+    -> LEFT JOIN accounts    fa   ON t.fromaccount = fa.accountid
+    -> LEFT JOIN customers   fa_c ON fa.customerid = fa_c.customerid
+    -> LEFT JOIN accounts    ta   ON t.toaccount   = ta.accountid
+    -> LEFT JOIN customers   ta_c ON ta.customerid = ta_c.customerid;
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> notee;
+mysql> INSERT INTO users (username, password, role)
+    -> VALUES ('admin', 'admin123', 'Admin');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from users;
++--------+----------+-----------+----------+
+| userid | username | password  | role     |
++--------+----------+-----------+----------+
+|      3 | admin    | admin123  | Admin    |
+|      4 | Cust1    | customer1 | Customer |
++--------+----------+-----------+----------+
+2 rows in set (0.00 sec)
+
+mysql> select * from customers;
++------------+--------+-----------+----------+------+-------+-------+---------+------------+
+| customerid | userid | firstname | lastname | dob  | email | phone | Address | DOCreation |
++------------+--------+-----------+----------+------+-------+-------+---------+------------+
+|          2 |      4 | John      | NULL     | NULL | NULL  | NULL  | NULL    | NULL       |
++------------+--------+-----------+----------+------+-------+-------+---------+------------+
+1 row in set (0.00 sec)
+
+mysql> select * from users;
++--------+----------+-----------+----------+
+| userid | username | password  | role     |
++--------+----------+-----------+----------+
+|      3 | admin    | admin123  | Admin    |
+|      4 | Cust1    | customer1 | Customer |
++--------+----------+-----------+----------+
+2 rows in set (0.00 sec)
+
+mysql> select * from users;
++--------+----------+-----------+----------+
+| userid | username | password  | role     |
++--------+----------+-----------+----------+
+|      3 | admin    | admin123  | Admin    |
+|      4 | Cust1    | customer1 | Customer |
+|      5 | cust2    | qwerty    | Customer |
++--------+----------+-----------+----------+
+3 rows in set (0.00 sec)
+
