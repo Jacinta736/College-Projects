@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NexBank – Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+        --bg: #0a0e17; --panel: #111827; --panel2: #0f172a;
+        --border: #1e2d45; --accent: #f59e0b; --accent2: #ef4444;
+        --blue: #3b82f6; --text: #e2e8f0; --muted: #64748b;
+        --success: #22c55e; --radius: 12px;
+    }
+    body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; }
+
+    .sidebar {
+        width:240px; min-height:100vh; background:var(--panel2);
+        border-right:1px solid var(--border); padding:28px 0;
+        display:flex; flex-direction:column; position:fixed; top:0; left:0; bottom:0;
+    }
+    .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:22px; letter-spacing:-1px;
+        background:linear-gradient(135deg,var(--accent),var(--accent2));
+        -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+        padding:0 24px; margin-bottom:4px; }
+    .logo-sub { font-size:11px; color:var(--muted); padding:0 24px; margin-bottom:32px; letter-spacing:.5px; }
+    .nav-section { font-size:10px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; padding:0 24px; margin:16px 0 8px; }
+    .nav-item {
+        display:flex; align-items:center; gap:10px; padding:10px 24px;
+        color:var(--muted); font-size:14px; cursor:pointer; border-left:3px solid transparent; transition:all .15s;
+    }
+    .nav-item:hover { color:var(--text); background:rgba(255,255,255,.04); }
+    .nav-item.active { color:var(--accent); border-left-color:var(--accent); background:rgba(245,158,11,.06); }
+    .nav-icon { font-size:16px; width:18px; text-align:center; }
+    .sidebar-footer { margin-top:auto; padding:16px 24px; }
+    .logout-btn {
+        width:100%; background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.2);
+        color:#fca5a5; border-radius:var(--radius); padding:10px; cursor:pointer;
+        font-family:'DM Sans',sans-serif; font-size:13px; transition:background .2s;
+    }
+    .logout-btn:hover { background:rgba(239,68,68,.2); }
+
+    .main { margin-left:240px; flex:1; padding:32px; min-height:100vh; }
+    .page { display:none; animation:fadeIn .3s ease; }
+    .page.active { display:block; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+    .page-title { font-family:'Syne',sans-serif; font-size:22px; font-weight:700; margin-bottom:4px; }
+    .page-sub   { color:var(--muted); font-size:14px; margin-bottom:28px; }
+
+    .card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:24px; }
+    .card + .card { margin-top:20px; }
+
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th { text-align:left; padding:10px 14px; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.8px; border-bottom:1px solid var(--border); font-weight:500; }
+    td { padding:12px 14px; border-bottom:1px solid rgba(30,45,69,.5); }
+    tr:last-child td { border:none; }
+    tr:hover td { background:rgba(255,255,255,.02); }
+
+    .cust-row { cursor:pointer; transition:background .15s; }
+    .cust-row:hover td { background:rgba(245,158,11,.05) !important; }
+    .cust-row td:first-child { color:var(--accent); font-weight:600; }
+    .click-hint { font-size:11px; color:var(--muted); margin-left:6px; font-weight:400; text-transform:none; letter-spacing:0; }
+
+    .tag { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; letter-spacing:.4px; }
+    .tag-deposit  { background:rgba(34,197,94,.12);  color:#86efac; }
+    .tag-withdraw { background:rgba(239,68,68,.12);   color:#fca5a5; }
+    .tag-transfer { background:rgba(245,158,11,.12);  color:#fcd34d; }
+    .tag-savings  { background:rgba(59,130,246,.12);  color:#93c5fd; }
+    .tag-current  { background:rgba(168,85,247,.12);  color:#d8b4fe; }
+
+    .form-row { display:grid; gap:16px; }
+    .form-row.cols2 { grid-template-columns:1fr 1fr; }
+    .field { display:flex; flex-direction:column; gap:6px; }
+    .field label { font-size:12px; color:var(--muted); font-weight:500; letter-spacing:.4px; }
+    .field input {
+        background:rgba(255,255,255,.04); border:1px solid var(--border);
+        border-radius:var(--radius); padding:11px 14px; color:var(--text);
+        font-family:'DM Sans',sans-serif; font-size:14px; outline:none; transition:border-color .2s;
+    }
+    .field input:focus { border-color:var(--accent); }
+
+    .btn-primary {
+        background:linear-gradient(135deg,var(--accent),var(--accent2));
+        color:#fff; border:none; border-radius:var(--radius); padding:12px 24px;
+        font-family:'Syne',sans-serif; font-size:14px; font-weight:700; cursor:pointer; margin-top:8px;
+        transition:opacity .2s, transform .1s;
+    }
+    .btn-primary:hover  { opacity:.9; }
+    .btn-primary:active { transform:scale(.98); }
+
+    .search-bar {
+        background:rgba(255,255,255,.04); border:1px solid var(--border);
+        border-radius:var(--radius); padding:10px 16px; color:var(--text);
+        font-family:'DM Sans',sans-serif; font-size:14px; outline:none; width:300px;
+        margin-bottom:16px; transition:border-color .2s;
+    }
+    .search-bar:focus { border-color:var(--blue); }
+
+    /* Customer detail */
+    .back-btn {
+        display:inline-flex; align-items:center; gap:8px; color:var(--muted);
+        font-size:13px; cursor:pointer; margin-bottom:24px; padding:6px 0; transition:color .15s;
+    }
+    .back-btn:hover { color:var(--text); }
+
+    .cust-header { display:flex; align-items:center; gap:16px; margin-bottom:28px; }
+    .cust-avatar {
+        width:52px; height:52px; border-radius:50%;
+        background:linear-gradient(135deg,var(--accent),var(--accent2));
+        display:flex; align-items:center; justify-content:center;
+        font-family:'Syne',sans-serif; font-size:20px; font-weight:800; color:#fff; flex-shrink:0;
+    }
+    .cust-name { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; }
+    .cust-meta { color:var(--muted); font-size:13px; margin-top:3px; }
+
+    .acc-block { margin-bottom:16px; }
+    .acc-header {
+        display:flex; align-items:center; gap:12px;
+        padding:16px 20px; background:rgba(255,255,255,.03);
+        border-radius:12px 12px 0 0; border:1px solid var(--border); border-bottom:none;
+        cursor:pointer; transition:background .15s; user-select:none;
+    }
+    .acc-header:hover { background:rgba(255,255,255,.055); }
+    .acc-header.collapsed { border-radius:12px; border-bottom:1px solid var(--border); }
+    .acc-id  { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; color:var(--accent); }
+    .acc-bal { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-left:auto; }
+    .acc-chevron { color:var(--muted); font-size:11px; transition:transform .2s; margin-left:8px; }
+    .acc-chevron.open { transform:rotate(180deg); }
+
+    .acc-txns {
+        border:1px solid var(--border); border-top:none;
+        border-radius:0 0 12px 12px; overflow:hidden; display:none;
+    }
+    .acc-txns.open { display:block; }
+
+    .toast {
+        position:fixed; bottom:24px; right:24px; padding:14px 20px; border-radius:12px;
+        font-size:14px; font-weight:500; z-index:999; display:none;
+        box-shadow:0 8px 24px rgba(0,0,0,.4); animation:slideIn .3s ease;
+    }
+    @keyframes slideIn { from{transform:translateX(100%);opacity:0} to{transform:none;opacity:1} }
+    .toast.success { background:rgba(34,197,94,.15); border:1px solid rgba(34,197,94,.3); color:#86efac; }
+    .toast.error   { background:rgba(239,68,68,.15);  border:1px solid rgba(239,68,68,.3);  color:#fca5a5; }
+    .empty { color:var(--muted); font-size:14px; text-align:center; padding:24px; }
+    </style>
+    </head>
+    <body>
+
+    <div class="sidebar">
+    <div class="logo">NexBank</div>
+    <div class="logo-sub">Admin Panel</div>
+
+    <div class="nav-section">Customers</div>
+    <div class="nav-item active" id="nav-customers" onclick="showPage('customers')">
+        <span class="nav-icon">👥</span> All Customers
+    </div>
+    <div class="nav-item" id="nav-addcustomer" onclick="showPage('addcustomer')">
+        <span class="nav-icon">➕</span> Add Customer
+    </div>
+
+    <div class="sidebar-footer">
+        <button class="logout-btn" onclick="location.href='/logout'">Sign Out</button>
+    </div>
+    </div>
+
+    <div class="main">
+
+    <!-- ALL CUSTOMERS -->
+    <div class="page active" id="page-customers">
+        <div class="page-title">All Customers</div>
+        <div class="page-sub">Click any row to view that customer's accounts and transactions</div>
+        <input class="search-bar" type="text" placeholder="Search by name, email, username…" oninput="filterCustomers(this.value)">
+        <div class="card">
+        <div class="table-wrap">
+            <table>
+            <thead>
+                <tr>
+                <th>ID</th>
+                <th>Name <span class="click-hint">— click to expand →</span></th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Joined</th>
+                </tr>
+            </thead>
+            <tbody id="cust-body">
+                <tr><td colspan="6" class="empty">Loading…</td></tr>
+            </tbody>
+            </table>
+        </div>
+        </div>
+    </div>
+
+    <!-- CUSTOMER DETAIL -->
+    <div class="page" id="page-customerdetail">
+        <div class="back-btn" onclick="backToCustomers()">← Back to All Customers</div>
+        <div class="cust-header">
+        <div class="cust-avatar" id="detail-avatar">?</div>
+        <div>
+            <div class="cust-name" id="detail-name">–</div>
+            <div class="cust-meta" id="detail-meta">–</div>
+        </div>
+        </div>
+        <div id="detail-accounts-container">
+        <div class="empty">Loading…</div>
+        </div>
+    </div>
+
+    <!-- ADD CUSTOMER -->
+    <div class="page" id="page-addcustomer">
+        <div class="page-title">Add New Customer</div>
+        <div class="page-sub">Register a new customer account</div>
+        <div class="card" style="max-width:560px">
+        <div class="form-row cols2">
+            <div class="field">
+            <label>Username *</label>
+            <input id="ac-username" type="text" placeholder="Unique username">
+            </div>
+            <div class="field">
+            <label>Password *</label>
+            <input id="ac-password" type="password" placeholder="Set password">
+            </div>
+            <div class="field">
+            <label>First Name *</label>
+            <input id="ac-fname" type="text" placeholder="First name">
+            </div>
+            <div class="field">
+            <label>Last Name</label>
+            <input id="ac-lname" type="text" placeholder="Last name">
+            </div>
+            <div class="field">
+            <label>Email</label>
+            <input id="ac-email" type="email" placeholder="email@example.com">
+            </div>
+            <div class="field">
+            <label>Phone</label>
+            <input id="ac-phone" type="text" maxlength="10" placeholder="10-digit phone">
+            </div>
+        </div>
+        <button class="btn-primary" onclick="doAddCustomer()">Create Customer →</button>
+        </div>
+    </div>
+
+    <!-- TRANSACTIONS LOG -->
+    <div class="page" id="page-transactions">
+        <div class="page-title">Transaction Log</div>
+        <div class="page-sub">All transactions across the system</div>
+        <div class="card">
+        <div class="table-wrap">
+            <table>
+            <thead><tr><th>#</th><th>Type</th><th>Amount</th><th>From Acc</th><th>To Acc</th><th>Date</th></tr></thead>
+            <tbody id="txn-body"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+            </table>
+        </div>
+        </div>
+    </div>
+
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    let allCustomers = [];
+
+    function showPage(name) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('page-' + name).classList.add('active');
+        const navEl = document.getElementById('nav-' + name);
+        if (navEl) navEl.classList.add('active');
+        if (name === 'customers')    loadCustomers();
+        if (name === 'transactions') loadTransactions();
+    }
+
+    function backToCustomers() {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('page-customers').classList.add('active');
+        document.getElementById('nav-customers').classList.add('active');
+    }
+
+    function toast(msg, type='success') {
+        const t = document.getElementById('toast');
+        t.textContent = msg; t.className = 'toast ' + type; t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 3500);
+    }
+
+    async function get(url)  { return (await fetch(url)).json(); }
+    async function post(url, data) {
+        return (await fetch(url, { method:'POST', body: new URLSearchParams(data) })).json();
+    }
+
+    // ── Customers list ──
+    async function loadCustomers() {
+        allCustomers = await get('/all_customers');
+        renderCustomers(allCustomers);
+    }
+
+    function renderCustomers(data) {
+        const tbody = document.getElementById('cust-body');
+        if (!data.length) { tbody.innerHTML='<tr><td colspan="6" class="empty">No customers found</td></tr>'; return; }
+        tbody.innerHTML = data.map(c => `
+        <tr class="cust-row" onclick="openCustomer(${c.customerid})">
+            <td>#${c.customerid}</td>
+            <td>${(c.firstname||'')} ${(c.lastname||'')}</td>
+            <td style="color:var(--muted)">${c.username||'–'}</td>
+            <td>${c.email||'–'}</td>
+            <td>${c.phone||'–'}</td>
+            <td style="color:var(--muted);font-size:12px">${c.DOCreation||'–'}</td>
+        </tr>
+        `).join('');
+    }
+
+    function filterCustomers(q) {
+        q = q.toLowerCase();
+        renderCustomers(allCustomers.filter(c =>
+        ((c.firstname||'')+(c.lastname||'')+(c.email||'')+(c.username||'')).toLowerCase().includes(q)
+        ));
+    }
+
+    // ── Customer detail drill-down ──
+    async function openCustomer(customerid) {
+        const c = allCustomers.find(x => x.customerid === customerid);
+        if (!c) return;
+
+        const initials = ((c.firstname||'?')[0] + (c.lastname ? c.lastname[0] : '')).toUpperCase();
+        document.getElementById('detail-avatar').textContent = initials || '?';
+        document.getElementById('detail-name').textContent   = (c.firstname||'') + ' ' + (c.lastname||'');
+        document.getElementById('detail-meta').textContent   =
+        `@${c.username}  ·  ${c.email||'no email'}  ·  ${c.phone||'no phone'}`;
+
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('page-customerdetail').classList.add('active');
+        document.getElementById('nav-customers').classList.add('active');
+
+        const container = document.getElementById('detail-accounts-container');
+        container.innerHTML = '<div class="empty">Loading accounts…</div>';
+
+        const [accounts, allTxns] = await Promise.all([
+        get(`/admin/customer_accounts?customerid=${customerid}`),
+        get(`/admin/customer_transactions?customerid=${customerid}`)
+        ]);
+
+        if (!accounts.length) {
+        container.innerHTML = '<div class="empty" style="padding:40px">This customer has no accounts yet.</div>';
+        return;
+        }
+
+        container.innerHTML = accounts.map(acc => {
+        const txns = allTxns.filter(t => t.fromaccount === acc.accountid || t.toaccount === acc.accountid);
+        const txnRows = txns.length
+            ? txns.map(t => {
+                const cls = 'tag-' + t.transactiontype.toLowerCase();
+                const dt  = new Date(t.transactiondate).toLocaleString('en-IN');
+                return `<tr>
+                <td>#${t.transactionid}</td>
+                <td><span class="tag ${cls}">${t.transactiontype}</span></td>
+                <td>₹${parseFloat(t.amount).toLocaleString('en-IN',{minimumFractionDigits:2})}</td>
+                <td>${t.fromaccount||'–'}</td>
+                <td>${t.toaccount||'–'}</td>
+                <td style="color:var(--muted);font-size:12px">${dt}</td>
+                </tr>`;
+            }).join('')
+            : `<tr><td colspan="6" class="empty">No transactions for this account</td></tr>`;
+
+        const typeCls = 'tag-' + acc.accounttype.toLowerCase();
+        const bal = parseFloat(acc.balance).toLocaleString('en-IN',{minimumFractionDigits:2});
+
+        return `
+            <div class="acc-block">
+            <div class="acc-header collapsed" id="header-${acc.accountid}" onclick="toggleAcc(${acc.accountid})">
+                <span class="acc-id">Account #${acc.accountid}</span>
+                <span class="tag ${typeCls}">${acc.accounttype}</span>
+                <span style="font-size:12px;color:var(--muted);margin-left:4px">${acc.currency}</span>
+                <span class="acc-bal">₹${bal}</span>
+                <span class="acc-chevron" id="chevron-${acc.accountid}">▼</span>
+            </div>
+            <div class="acc-txns" id="txns-${acc.accountid}">
+                <table>
+                <thead><tr><th>#</th><th>Type</th><th>Amount</th><th>From</th><th>To</th><th>Date</th></tr></thead>
+                <tbody>${txnRows}</tbody>
+                </table>
+            </div>
+            </div>
+        `;
+        }).join('');
+    }
+
+    function toggleAcc(accountid) {
+        const panel   = document.getElementById('txns-' + accountid);
+        const chevron = document.getElementById('chevron-' + accountid);
+        const header  = document.getElementById('header-' + accountid);
+        const isOpen  = panel.classList.toggle('open');
+        chevron.classList.toggle('open', isOpen);
+        header.classList.toggle('collapsed', !isOpen);
+    }
+
+    // ── Transaction log ──
+    async function loadTransactions() {
+        const data = await get('/transactions_log');
+        const tbody = document.getElementById('txn-body');
+        if (!data.length) { tbody.innerHTML='<tr><td colspan="6" class="empty">No transactions</td></tr>'; return; }
+        tbody.innerHTML = data.map(t => {
+        const cls = 'tag-' + t.transactiontype.toLowerCase();
+        const dt  = new Date(t.transactiondate).toLocaleString('en-IN');
+        return `<tr>
+            <td>#${t.transactionid}</td>
+            <td><span class="tag ${cls}">${t.transactiontype}</span></td>
+            <td>₹${parseFloat(t.amount).toLocaleString('en-IN',{minimumFractionDigits:2})}</td>
+            <td>${t.fromaccount||'–'}</td>
+            <td>${t.toaccount||'–'}</td>
+            <td style="color:var(--muted);font-size:12px">${dt}</td>
+        </tr>`;
+        }).join('');
+    }
+
+    // ── Add Customer ──
+    async function doAddCustomer() {
+        const username = document.getElementById('ac-username').value.trim();
+        const password = document.getElementById('ac-password').value.trim();
+        const fname    = document.getElementById('ac-fname').value.trim();
+        const lname    = document.getElementById('ac-lname').value.trim();
+        const email    = document.getElementById('ac-email').value.trim();
+        const phone    = document.getElementById('ac-phone').value.trim();
+        if (!username || !password || !fname) { toast('Username, password, and first name are required', 'error'); return; }
+        const r = await post('/add_customer', { username, password, fname, lname, email, phone });
+        toast(r.message, r.success ? 'success' : 'error');
+        if (r.success) {
+        ['ac-username','ac-password','ac-fname','ac-lname','ac-email','ac-phone']
+            .forEach(id => document.getElementById(id).value = '');
+        }
+    }
+
+    // Load initial
+    loadCustomers();
+    </script>
+    </body>
+    </html>
