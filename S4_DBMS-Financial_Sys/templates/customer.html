@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NexBank – Customer</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+        --bg: #0a0e17; --panel: #111827; --panel2: #0f172a;
+        --border: #1e2d45; --accent: #3b82f6; --accent2: #06b6d4;
+        --text: #e2e8f0; --muted: #64748b; --danger: #ef4444;
+        --success: #22c55e; --warn: #f59e0b; --radius: 12px;
+    }
+    body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; }
+
+    /* Sidebar */
+    .sidebar {
+        width: 240px; min-height: 100vh; background: var(--panel2);
+        border-right: 1px solid var(--border); padding: 28px 0;
+        display: flex; flex-direction: column; position: fixed; top:0; left:0; bottom:0;
+    }
+    .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:22px; letter-spacing:-1px;
+        background:linear-gradient(135deg,var(--accent),var(--accent2));
+        -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+        padding: 0 24px; margin-bottom: 8px; }
+    .logo-sub { font-size:11px; color:var(--muted); padding:0 24px; margin-bottom:32px; letter-spacing:.5px; }
+    .nav-section { font-size:10px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; padding:0 24px; margin:16px 0 8px; }
+    .nav-item {
+        display:flex; align-items:center; gap:10px; padding:10px 24px;
+        color:var(--muted); font-size:14px; cursor:pointer; border-left:3px solid transparent;
+        transition:all .15s;
+    }
+    .nav-item:hover { color:var(--text); background:rgba(255,255,255,.04); }
+    .nav-item.active { color:var(--accent); border-left-color:var(--accent); background:rgba(59,130,246,.06); }
+    .nav-icon { font-size:16px; width:18px; text-align:center; }
+    .sidebar-footer { margin-top:auto; padding:16px 24px; }
+    .logout-btn {
+        width:100%; background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.2);
+        color:#fca5a5; border-radius:var(--radius); padding:10px; cursor:pointer;
+        font-family:'DM Sans',sans-serif; font-size:13px; transition:background .2s;
+    }
+    .logout-btn:hover { background:rgba(239,68,68,.2); }
+
+    /* Main */
+    .main { margin-left:240px; flex:1; padding:32px; min-height:100vh; }
+    .page { display:none; animation:fadeIn .3s ease; }
+    .page.active { display:block; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+    .page-title { font-family:'Syne',sans-serif; font-size:22px; font-weight:700; margin-bottom:4px; }
+    .page-sub   { color:var(--muted); font-size:14px; margin-bottom:28px; }
+
+    /* Cards */
+    .card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:24px; }
+    .card + .card { margin-top:20px; }
+    .card-title { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:16px; }
+
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+
+    /* Stat card */
+    .stat { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:20px 24px; }
+    .stat-label { font-size:12px; color:var(--muted); letter-spacing:.5px; margin-bottom:8px; }
+    .stat-value { font-family:'Syne',sans-serif; font-size:26px; font-weight:700; }
+    .stat-type  { font-size:12px; color:var(--accent2); margin-top:4px; }
+
+    /* Detail rows */
+    .detail-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border); }
+    .detail-row:last-child { border:none; }
+    .detail-key { font-size:13px; color:var(--muted); }
+    .detail-val { font-size:14px; font-weight:500; }
+
+    /* Forms */
+    .form-row { display:grid; gap:16px; }
+    .form-row.cols2 { grid-template-columns:1fr 1fr; }
+    .field { display:flex; flex-direction:column; gap:6px; }
+    .field label { font-size:12px; color:var(--muted); font-weight:500; letter-spacing:.4px; }
+    .field input, .field select {
+        background:rgba(255,255,255,.04); border:1px solid var(--border);
+        border-radius:var(--radius); padding:11px 14px; color:var(--text);
+        font-family:'DM Sans',sans-serif; font-size:14px; outline:none; transition:border-color .2s;
+    }
+    .field input:focus, .field select:focus { border-color:var(--accent); }
+    .field select option { background:var(--panel); }
+
+    .btn-primary {
+        background:linear-gradient(135deg,var(--accent),var(--accent2));
+        color:#fff; border:none; border-radius:var(--radius); padding:12px 24px;
+        font-family:'Syne',sans-serif; font-size:14px; font-weight:700; cursor:pointer; margin-top:8px;
+        transition:opacity .2s, transform .1s;
+    }
+    .btn-primary:hover  { opacity:.9; }
+    .btn-primary:active { transform:scale(.98); }
+
+    /* Table */
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th { text-align:left; padding:10px 14px; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.8px; border-bottom:1px solid var(--border); font-weight:500; }
+    td { padding:12px 14px; border-bottom:1px solid rgba(30,45,69,.5); }
+    tr:last-child td { border:none; }
+    tr:hover td { background:rgba(255,255,255,.02); }
+
+    /* Tags */
+    .tag {
+        display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; letter-spacing:.4px;
+    }
+    .tag-deposit  { background:rgba(34,197,94,.12); color:#86efac; }
+    .tag-withdraw { background:rgba(239,68,68,.12);  color:#fca5a5; }
+    .tag-transfer { background:rgba(245,158,11,.12); color:#fcd34d; }
+    .tag-credit   { background:rgba(59,130,246,.12); color:#93c5fd; }
+    .tag-debit    { background:rgba(168,85,247,.12); color:#d8b4fe; }
+
+    /* Toast */
+    .toast {
+        position:fixed; bottom:24px; right:24px; padding:14px 20px; border-radius:12px;
+        font-size:14px; font-weight:500; z-index:999; display:none;
+        box-shadow:0 8px 24px rgba(0,0,0,.4);
+        animation:slideIn .3s ease;
+    }
+    @keyframes slideIn { from{transform:translateX(100%);opacity:0} to{transform:none;opacity:1} }
+    .toast.success { background:rgba(34,197,94,.15); border:1px solid rgba(34,197,94,.3); color:#86efac; }
+    .toast.error   { background:rgba(239,68,68,.15);  border:1px solid rgba(239,68,68,.3);  color:#fca5a5; }
+
+    .empty { color:var(--muted); font-size:14px; text-align:center; padding:32px; }
+    </style>
+    </head>
+    <body>
+
+    <div class="sidebar">
+    <div class="logo">NexBank</div>
+    <div class="logo-sub">Customer Portal</div>
+
+    <div class="nav-section">Overview</div>
+    <div class="nav-item active" onclick="showPage('profile')">
+        <span class="nav-icon">👤</span> My Profile
+    </div>
+
+    <div class="nav-section">Accounts</div>
+    <div class="nav-item" onclick="showPage('accounts')">
+        <span class="nav-icon">🏦</span> Accounts
+    </div>
+    <div class="nav-item" onclick="showPage('openaccount')">
+        <span class="nav-icon">🆕</span> Open Account
+    </div>
+    <div class="nav-item" onclick="showPage('transactions')">
+        <span class="nav-icon">📋</span> Transactions
+    </div>
+
+    <div class="nav-section">Operations</div>
+    <div class="nav-item" onclick="showPage('deposit')">
+        <span class="nav-icon">⬇️</span> Deposit
+    </div>
+    <div class="nav-item" onclick="showPage('withdraw')">
+        <span class="nav-icon">⬆️</span> Withdraw
+    </div>
+    <div class="nav-item" onclick="showPage('transfer')">
+        <span class="nav-icon">↔️</span> Transfer
+    </div>
+
+    <div class="nav-section">Cards</div>
+    <div class="nav-item" onclick="showPage('cards')">
+        <span class="nav-icon">💳</span> My Cards
+    </div>
+    <div class="nav-item" onclick="showPage('addcard')">
+        <span class="nav-icon">➕</span> Add Card
+    </div>
+
+    <div class="sidebar-footer">
+        <button class="logout-btn" onclick="location.href='/logout'">Sign Out</button>
+    </div>
+    </div>
+
+    <div class="main">
+
+    <!-- PROFILE -->
+    <div class="page active" id="page-profile">
+        <div class="page-title">My Profile</div>
+        <div class="page-sub">Your personal information on file</div>
+        <div class="card" id="profile-card">
+        <div class="empty">Loading…</div>
+        </div>
+    </div>
+
+    <!-- ACCOUNTS -->
+    <div class="page" id="page-accounts">
+        <div class="page-title">My Accounts</div>
+        <div class="page-sub">All your bank accounts</div>
+        <div id="accounts-grid" class="grid2"></div>
+    </div>
+
+    <!-- OPEN ACCOUNT -->
+    <div class="page" id="page-openaccount">
+        <div class="page-title">Open New Account</div>
+        <div class="page-sub">Create a new bank account — account number is auto-generated</div>
+        <div class="card" style="max-width:420px">
+        <div class="form-row">
+            <div class="field">
+            <label>Account Type</label>
+            <select id="oa-type">
+                <option value="Savings">Savings</option>
+                <option value="Current">Current</option>
+            </select>
+            </div>
+            <div class="field">
+            <label>Currency</label>
+            <select id="oa-currency">
+                <option value="INR">INR – Indian Rupee</option>
+                <option value="USD">USD – US Dollar</option>
+                <option value="EUR">EUR – Euro</option>
+            </select>
+            </div>
+        </div>
+        <button class="btn-primary" onclick="doOpenAccount()">Open Account →</button>
+        </div>
+    </div>
+
+    <!-- TRANSACTIONS -->
+    <div class="page" id="page-transactions">
+        <div class="page-title">Transaction History</div>
+        <div class="page-sub">All your recent activity</div>
+        <div class="card">
+        <div class="table-wrap">
+            <table>
+            <thead>
+                <tr>
+                <th>#</th><th>Type</th><th>Amount</th><th>From</th><th>To</th><th>Date</th>
+                </tr>
+            </thead>
+            <tbody id="txn-body"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+            </table>
+        </div>
+        </div>
+    </div>
+
+    <!-- DEPOSIT -->
+    <div class="page" id="page-deposit">
+        <div class="page-title">Deposit Money</div>
+        <div class="page-sub">Add funds to your account</div>
+        <div class="card" style="max-width:480px">
+        <div class="form-row">
+            <div class="field">
+            <label>Account Number</label>
+            <input id="dep-account" type="number" placeholder="Enter account ID">
+            </div>
+            <div class="field">
+            <label>Amount (₹)</label>
+            <input id="dep-amount" type="number" placeholder="0.00" min="1">
+            </div>
+        </div>
+        <button class="btn-primary" onclick="doDeposit()">Deposit →</button>
+        </div>
+    </div>
+
+    <!-- WITHDRAW -->
+    <div class="page" id="page-withdraw">
+        <div class="page-title">Withdraw Money</div>
+        <div class="page-sub">Withdraw funds from your account</div>
+        <div class="card" style="max-width:480px">
+        <div class="form-row">
+            <div class="field">
+            <label>Account Number</label>
+            <input id="wd-account" type="number" placeholder="Enter account ID">
+            </div>
+            <div class="field">
+            <label>Amount (₹)</label>
+            <input id="wd-amount" type="number" placeholder="0.00" min="1">
+            </div>
+        </div>
+        <button class="btn-primary" onclick="doWithdraw()">Withdraw →</button>
+        </div>
+    </div>
+
+    <!-- TRANSFER -->
+    <div class="page" id="page-transfer">
+        <div class="page-title">Transfer Money</div>
+        <div class="page-sub">Send money to another account</div>
+        <div class="card" style="max-width:480px">
+        <div class="form-row">
+            <div class="field">
+            <label>From Account</label>
+            <input id="tr-from" type="number" placeholder="Your account ID">
+            </div>
+            <div class="field">
+            <label>To Account</label>
+            <input id="tr-to" type="number" placeholder="Recipient account ID">
+            </div>
+            <div class="field">
+            <label>Amount (₹)</label>
+            <input id="tr-amount" type="number" placeholder="0.00" min="1">
+            </div>
+        </div>
+        <button class="btn-primary" onclick="doTransfer()">Transfer →</button>
+        </div>
+    </div>
+
+    <!-- CARDS -->
+    <div class="page" id="page-cards">
+        <div class="page-title">My Cards</div>
+        <div class="page-sub">Cards linked to your accounts</div>
+        <div id="cards-grid" class="grid2"></div>
+    </div>
+
+    <!-- ADD CARD -->
+    <div class="page" id="page-addcard">
+        <div class="page-title">Add New Card</div>
+        <div class="page-sub">Link a card to one of your accounts</div>
+        <div class="card" style="max-width:520px">
+        <div class="form-row cols2">
+            <div class="field">
+            <label>Account Number</label>
+            <input id="card-account" type="number" placeholder="Account ID">
+            </div>
+            <div class="field">
+            <label>Card Type</label>
+            <select id="card-type">
+                <option value="Debit">Debit</option>
+                <option value="Credit">Credit</option>
+            </select>
+            </div>
+            <div class="field">
+            <label>Card Number</label>
+            <input id="card-number" type="text" maxlength="10" placeholder="10-digit number">
+            </div>
+            <div class="field">
+            <label>Expiry Date</label>
+            <input id="card-expiry" type="date">
+            </div>
+            <div class="field">
+            <label>CVV</label>
+            <input id="card-cvv" type="number" maxlength="3" placeholder="CVV">
+            </div>
+        </div>
+        <button class="btn-primary" onclick="doAddCard()">Add Card →</button>
+        </div>
+    </div>
+
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+    // ── Navigation ──
+    function showPage(name) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('page-' + name).classList.add('active');
+        event.currentTarget.classList.add('active');
+        if (name === 'profile')      loadProfile();
+        if (name === 'accounts')     loadAccounts();
+        if (name === 'transactions') loadTransactions();
+        if (name === 'cards')        loadCards();
+    }
+
+    // ── Toast ──
+    function toast(msg, type='success') {
+        const t = document.getElementById('toast');
+        t.textContent = msg; t.className = 'toast ' + type; t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 3500);
+    }
+
+    // ── API helpers ──
+    async function get(url) {
+        const r = await fetch(url);
+        return r.json();
+    }
+    async function post(url, data) {
+        const body = new URLSearchParams(data);
+        const r = await fetch(url, { method:'POST', body });
+        return r.json();
+    }
+
+    // ── Profile ──
+    async function loadProfile() {
+        const d = await get('/personal_details');
+        const el = document.getElementById('profile-card');
+        if (!d) { el.innerHTML = '<div class="empty">No data found</div>'; return; }
+        el.innerHTML = `
+        <div class="card-title">Personal Details</div>
+        ${row('Full Name', (d.firstname||'') + ' ' + (d.lastname||''))}
+        ${row('Username', d.username || '–')}
+        ${row('Email', d.email || '–')}
+        ${row('Phone', d.phone || '–')}
+        ${row('Date of Birth', d.dob || '–')}
+        ${row('Address', d.address || '–')}
+        `;
+    }
+    function row(k,v) {
+        return `<div class="detail-row"><span class="detail-key">${k}</span><span class="detail-val">${v}</span></div>`;
+    }
+
+    // ── Accounts ──
+    async function loadAccounts() {
+        const data = await get('/account_details');
+        const g = document.getElementById('accounts-grid');
+        if (!data.length) { g.innerHTML='<div class="empty">No accounts found</div>'; return; }
+        g.innerHTML = data.map(a => `
+        <div class="stat">
+            <div class="stat-label">Account #${a.accountid}</div>
+            <div class="stat-value">₹${parseFloat(a.balance).toLocaleString('en-IN',{minimumFractionDigits:2})}</div>
+            <div class="stat-type">${a.accounttype} · ${a.currency}</div>
+        </div>
+        `).join('');
+    }
+
+    // ── Transactions ──
+    async function loadTransactions() {
+        const data = await get('/my_transactions');
+        const tbody = document.getElementById('txn-body');
+        if (!data.length) { tbody.innerHTML='<tr><td colspan="6" class="empty">No transactions yet</td></tr>'; return; }
+        tbody.innerHTML = data.map(t => {
+        const type = t.transactiontype;
+        const cls  = 'tag-' + type.toLowerCase();
+        const date = new Date(t.transactiondate).toLocaleString('en-IN');
+        return `<tr>
+            <td>#${t.transactionid}</td>
+            <td><span class="tag ${cls}">${type}</span></td>
+            <td>₹${parseFloat(t.amount).toLocaleString('en-IN',{minimumFractionDigits:2})}</td>
+            <td>${t.fromaccount || '–'}</td>
+            <td>${t.toaccount   || '–'}</td>
+            <td style="color:var(--muted);font-size:12px">${date}</td>
+        </tr>`;
+        }).join('');
+    }
+
+    async function doOpenAccount() {
+        const accounttype = document.getElementById('oa-type').value;
+        const currency    = document.getElementById('oa-currency').value;
+        const r = await post('/open_account', { accounttype, currency });
+        toast(r.message, r.success ? 'success' : 'error');
+        if (r.success) {
+        toast(`Account #${r.accountid} created successfully!`, 'success');
+        }
+    }
+
+    // ── Operations ──
+    async function doDeposit() {
+        const account = document.getElementById('dep-account').value;
+        const amount  = document.getElementById('dep-amount').value;
+        if (!account || !amount) { toast('Fill all fields', 'error'); return; }
+        const r = await post('/deposit', { account, amount });
+        toast(r.message, r.success ? 'success' : 'error');
+    }
+
+    async function doWithdraw() {
+        const account = document.getElementById('wd-account').value;
+        const amount  = document.getElementById('wd-amount').value;
+        if (!account || !amount) { toast('Fill all fields', 'error'); return; }
+        const r = await post('/withdraw', { account, amount });
+        toast(r.message, r.success ? 'success' : 'error');
+    }
+
+    async function doTransfer() {
+        const from   = document.getElementById('tr-from').value;
+        const to     = document.getElementById('tr-to').value;
+        const amount = document.getElementById('tr-amount').value;
+        if (!from || !to || !amount) { toast('Fill all fields', 'error'); return; }
+        const r = await post('/transfer', { from, to, amount });
+        toast(r.message, r.success ? 'success' : 'error');
+    }
+
+    // ── Cards ──
+    async function loadCards() {
+        const data = await get('/cards');
+        const g = document.getElementById('cards-grid');
+        if (!data.length) { g.innerHTML='<div class="empty">No cards linked</div>'; return; }
+        g.innerHTML = data.map(c => `
+        <div class="stat">
+            <div class="stat-label">Account #${c.accountno}</div>
+            <div class="stat-value" style="font-size:18px;letter-spacing:2px">${c.cardnumber}</div>
+            <div style="margin-top:8px">
+            <span class="tag ${c.cardtype==='Credit'?'tag-credit':'tag-debit'}">${c.cardtype}</span>
+            <span style="font-size:12px;color:var(--muted);margin-left:10px">Exp: ${c.Expiry||'–'}</span>
+            </div>
+        </div>
+        `).join('');
+    }
+
+    async function doAddCard() {
+        const account = document.getElementById('card-account').value;
+        const number  = document.getElementById('card-number').value;
+        const expiry  = document.getElementById('card-expiry').value;
+        const cvv     = document.getElementById('card-cvv').value;
+        const type    = document.getElementById('card-type').value;
+        if (!account||!number||!expiry||!cvv) { toast('Fill all fields', 'error'); return; }
+        const r = await post('/add_card', { account, number, expiry, cvv, type });
+        toast(r.message, r.success ? 'success' : 'error');
+    }
+
+    // Load initial page
+    loadProfile();
+    </script>
+    </body>
+    </html>
