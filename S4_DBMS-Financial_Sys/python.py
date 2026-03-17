@@ -11,7 +11,7 @@ app.secret_key = "secretkey"
 DB_CONFIG = dict(
     host="localhost",
     user="root",
-    password="7152",
+    password="xxxx",
     database="financial_systems"
 )
 
