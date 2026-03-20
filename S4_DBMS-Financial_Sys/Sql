@@ -215,38 +215,13 @@ mysql> INSERT INTO users (username, password, role)
 Query OK, 1 row affected (0.01 sec)
 
 mysql> select * from users;
-+--------+----------+-----------+----------+
-| userid | username | password  | role     |
-+--------+----------+-----------+----------+
-|      3 | admin    | admin123  | Admin    |
-|      4 | Cust1    | customer1 | Customer |
-+--------+----------+-----------+----------+
-2 rows in set (0.00 sec)
-
-mysql> select * from customers;
-+------------+--------+-----------+----------+------+-------+-------+---------+------------+
-| customerid | userid | firstname | lastname | dob  | email | phone | Address | DOCreation |
-+------------+--------+-----------+----------+------+-------+-------+---------+------------+
-|          2 |      4 | John      | NULL     | NULL | NULL  | NULL  | NULL    | NULL       |
-+------------+--------+-----------+----------+------+-------+-------+---------+------------+
-1 row in set (0.00 sec)
-
-mysql> select * from users;
-+--------+----------+-----------+----------+
-| userid | username | password  | role     |
-+--------+----------+-----------+----------+
-|      3 | admin    | admin123  | Admin    |
-|      4 | Cust1    | customer1 | Customer |
-+--------+----------+-----------+----------+
-2 rows in set (0.00 sec)
-
-mysql> select * from users;
-+--------+----------+-----------+----------+
-| userid | username | password  | role     |
-+--------+----------+-----------+----------+
-|      3 | admin    | admin123  | Admin    |
-|      4 | Cust1    | customer1 | Customer |
-|      5 | cust2    | qwerty    | Customer |
-+--------+----------+-----------+----------+
-3 rows in set (0.00 sec)
-
++--------+-----------+-----------+----------+
+| userid | username  | password  | role     |
++--------+-----------+-----------+----------+
+|      3 | admin     | admin123  | Admin    |
+|      4 | Cust1     | customer1 | Customer |
+|      5 | cust2     | qwerty    | Customer |
+|      6 | Anisha    | anisha    | Customer |
+|      7 | prarthana | anisha    | Customer |
++--------+-----------+-----------+----------+
+5 rows in set (0.05 sec)
