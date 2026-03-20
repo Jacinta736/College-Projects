@@ -11,7 +11,7 @@ app.secret_key = "secretkey"
 DB_CONFIG = dict(
     host="localhost",
     user="root",
-    password="xxxx",
+    password="7152",
     database="financial_systems"
 )
 
@@ -26,21 +26,31 @@ def get_db():
         _db = mysql.connector.connect(**DB_CONFIG)
     return _db
 
-def query(sql, params=(), one=False):
-    """Run a SELECT and return one row or all rows."""
-    db = get_db()
-    cur = db.cursor(dictionary=True)
-    cur.execute(sql, params)
-    return cur.fetchone() if one else cur.fetchall()
+def query(sql, params=None, one=False):
+    db = mysql.connector.connect(**DB_CONFIG)
+    cur = db.cursor(dictionary=True, buffered=True)  
+    
+    cur.execute(sql, params or ())
+    result = cur.fetchone() if one else cur.fetchall()
+    
+    cur.close()
+    db.close()
+    
+    return result
 
 def execute(sql, params=()):
-    """Run an INSERT/UPDATE/DELETE, commit, and return lastrowid."""
-    db = get_db()
+    db = mysql.connector.connect(**DB_CONFIG)
     cur = db.cursor(dictionary=True)
+    
     cur.execute(sql, params)
     db.commit()
-    return cur.lastrowid
 
+    last_id = cur.lastrowid
+    
+    cur.close()
+    db.close()
+    
+    return last_id
 
 # ─────────────────────────────────────────────
 # LOGIN
